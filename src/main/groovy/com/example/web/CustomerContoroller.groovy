@@ -2,11 +2,13 @@ package com.example.web
 
 import com.example.domain.Customer
 import com.example.service.CustomerService
+import com.example.service.LoginUserDetails
 import groovy.transform.Canonical
 import org.springframework.beans.BeanUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.validation.BindingResult
@@ -39,15 +41,15 @@ class CustomerContoroller {
     String create(@Validated CustomerForm form,
                   BindingResult result,
                   Model model,
-                  @PageableDefault Pageable pageable) {
+                  @PageableDefault Pageable pageable,
+                  @AuthenticationPrincipal LoginUserDetails userDetails) {
 
         if (result.hasErrors()) {
             return list(model, pageable)
         }
 
-        Customer customer = new Customer()
-        BeanUtils.copyProperties(form, customer)
-        customerService.save(customer)
+        Customer customer = new Customer(null, form.firstName, form.lastName)
+        customerService.save(customer, userDetails.getUser())
 
         return "redirect:/customers"
     }
@@ -62,7 +64,8 @@ class CustomerContoroller {
     @PostMapping(path = "edit")
     String edit(@RequestParam Integer id,
                 @Validated CustomerForm form,
-                BindingResult result) {
+                BindingResult result,
+                @AuthenticationPrincipal LoginUserDetails userDetails) {
 
         if (result.hasErrors()) {
             return editForm(id, form)
@@ -70,7 +73,7 @@ class CustomerContoroller {
 
         // BeanUtils#copyProperties を使うと id が設定できなくなる
         Customer customer = new Customer(id, form.firstName, form.lastName)
-        customerService.save(customer)
+        customerService.save(customer, userDetails.getUser())
 
         return "redirect:/customers"
     }

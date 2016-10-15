@@ -6,12 +6,14 @@ import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
 import javax.persistence.Id
+import javax.persistence.JoinColumn
+import javax.persistence.ManyToOne
 import javax.persistence.Table
 
 @Canonical
 @Entity
 @Table(name = "customers")
-class Customer implements Serializable {
+class Customer {
 
     @Id
     @GeneratedValue
@@ -22,4 +24,8 @@ class Customer implements Serializable {
 
     @Column(nullable = false)
     String lastName
+
+    @ManyToOne
+    @JoinColumn(nullable = true, name = "username")
+    User user
 }
